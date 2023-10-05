@@ -1,0 +1,36 @@
+.NavBar {
+    display: flex;
+    justify-content: space-between; /* Coloca los elementos en los extremos */
+    align-items: center; /* Centra verticalmente los elementos */
+    background-color: #333; /* Color de fondo del navbar */
+    padding: 10px 20px; /* Espaciado interno */
+    color: white; /* Color del texto */
+  }
+  
+  h3 {
+    margin: 0; /* Elimina el margen predeterminado del h3 */
+  }
+  
+  .Categories {
+    display: flex;
+    justify-content: center; /* Centra los elementos horizontalmente */
+    gap: 20px; /* Espaciado entre los elementos */
+  }
+  
+  .Option {
+    text-decoration: none; /* Elimina la subrayado de los enlaces */
+    color: white; /* Color del texto de los enlaces */
+  }
+  
+  .ActiveOption {
+    font-weight: bold; /* Estilo para el enlace activo */
+  }
+  
+  /* Estilos para el CartWidget (puedes personalizarlos según tus preferencias) */
+  .CartWidget {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+  }  

@@ -1,12 +1,32 @@
-export const ItemListContainer = () => {
+import { useState, useEffect } from "react";
+import { getProducts, getProductsByCategory } from "../../asyncMock";
+import ItemList from "../ItemList/ItemList";
+
+import { useParams } from "react-router-dom";
+
+const ItemListContainer = ({ greeting }) => {
+    const [products, setProducts] = useState([])
+
+    const { categoryId } = useParams()
+
+    useEffect(() => {
+        const asyncFunc = categoryId ? getProductsByCategory : getProducts
+
+        asyncFunc(categoryId)
+        .then(response => {
+            setProducts(response)
+        })
+        .catch(error => {
+            console.error(error)
+        })
+    }, [categoryId])
+
     return (
-        <article class="message">
-            <div class="message-header">
-                <p>Bienvenidos</p>
-            </div>
-            <div class="message-body">
-                Te damos la bienvenida a Khali Desing, nuestro emprendimiento personal sobre artículos de papelería artesanales.
-            </div>
-        </article>
+        <div>
+            <h1>{greeting} </h1>
+            <ItemList products={products}/>
+        </div>
     )
 }
+
+export default ItemListContainer

@@ -1,31 +1,20 @@
-import CartWidget from "../CartWidget/CartWidget"
+import CartWidget from "../CartWidget/CartWidget";
+import { NavLink, Link } from "react-router-dom";
 
 const NavBar = () => {
-    return (
-        <div>
-            <section className="hero is-primary">
-                <div className="hero-body">
-                    <p className="title">Khali Design</p>
-                </div>
-            </section>
-            <div className="container">
-                <section>
-                    <div className="columns">
-                        <div className="column is--4">
-                            <button>Libretas</button>        
-                        </div>
-                        <div className="column is-4">
-                            <button>Recetarios</button>
-                        </div>
-                        <div className="column is-4">
-                            <button>Boxes</button>
-                        </div>
-                    </div>
-                </section>
-            </div>
-            <CartWidget />
-        </div>
-    )
-}
+  return (
+    <nav className="NavBar">
+      <Link to="/">
+        <h3>Khali Design</h3>
+      </Link>
+      <div className="Categories">
+        <NavLink to={`/category/Libretas`} activeClassName="ActiveOption" className="Option" />
+        <NavLink to={`/category/Recetarios`} activeClassName="ActiveOption" className="Option" />
+        <NavLink to={`/category/Boxes`} activeClassName="ActiveOption" className="Option" />
+      </div>
+      <CartWidget />
+    </nav>
+  );
+};
 
-export default NavBar
+export default NavBar;
