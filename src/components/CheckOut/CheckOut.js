@@ -1,141 +1,103 @@
-import { useContext, useState } from "react";
-import CartContext from "../../Context/CartContext";
+import { useState, useContext } from "react";
+import {
+  writeBatch,
+  collection,
+  getDocs,
+  query,
+  where,
+  documentId,
+  addDoc,
+} from "firebase/firestore";
 
-import { addDoc, collection, Timestamp } from "firebase/firestore";
 import { db } from "../../config/firebase";
+import CartContext from "../../Context/CartContext";
+import CheckoutForm from "../CheckoutForm/CheckoutForm";
 
-const CheckOut = () => {
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [email2, setEmail2] = useState("");
+const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [outOfStockItems, setOutOfStockItems] = useState([]);
 
-  const { cartList, totalPrice, removeList } = useContext(CartContext);
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    if (email != email2) {
-      alert("Los email deben coincidir");
-      return;
-    }
-
-    const userData = {
-      name,
-      phone,
-      email,
-    };
-
-    createOrder(userData);
-  };
+  const { cart, total, clearCart } = useContext(CartContext);
 
   const createOrder = async ({ name, phone, email }) => {
     setLoading(true);
 
     try {
-      const objOrder = {
-        buyer: {
-          name,
-          phone,
-          email,
-        },
-        items: cartList,
-        total: totalPrice,
-        date: Timestamp.fromDate(new Date()),
-      };
+      const batch = writeBatch(db);
+      const productsRef = collection(db, "Comidas");
+      const ids = cart.map((prod) => prod.id);
 
-      const orderRef = collection(db, "orders");
+      const productsFromFirestore = await getDocs(
+        query(productsRef, where(documentId(), "in", ids))
+      );
 
-      const orderAdded = await addDoc(orderRef, objOrder);
+      const outOfStock = [];
 
-      setOrderId(orderAdded.id);
+      productsFromFirestore.docs.forEach((doc) => {
+        const dataDoc = doc.data();
+        const productInCart = cart.find((prod) => prod.id === doc.id);
+        
+        if (dataDoc.stock >= productInCart.quantity) {
+          batch.update(doc.ref, { stock: dataDoc.stock - productInCart.quantity });
+        } else {
+          outOfStock.push({ ...dataDoc, id: doc.id });
+        }
+      });
 
-      removeList();
+      if (outOfStock.length === 0) {
+        const orderRef = collection(db, "orders");
+        const objOrder = {
+          buyer: { name, phone, email },
+          items: cart,
+          total,
+          date: new Date(),
+        };
+
+        const orderAdded = await addDoc(orderRef, objOrder);
+        setOrderId(orderAdded.id);
+        clearCart();
+      } else {
+        console.error("Hay productos fuera de stock");
+        setOutOfStockItems(outOfStock);
+      }
+
     } catch (error) {
-      console.log(error);
+      console.error("Error al crear la orden:", error);
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <h1 className="title has-text-centered">Se está generando su orden...</h1>;
-  }
-
-  if (orderId) {
-    return <h1 className="title has-text-centered">El id de su orden es: {orderId}</h1>;
+    return <h1>Se está generando su orden...</h1>;
   }
 
   return (
-    <div className="container">
-      <h1 className="title has-text-centered">Checkout</h1>
-      <form
-        className="box"
-        style={{ maxWidth: "600px", marginTop: "20px", marginLeft: "auto", marginRight: "auto" }}
-        onSubmit={handleSubmit}
-      >
-        <div className="field">
-          <label className="label">Nombre</label>
-          <div className="control">
-            <input
-              className="input"
-              type="text"
-              placeholder="Nombre Apellido"
-              value={name}
-              onChange={({ target }) => setName(target.value)}
-              required
-            />
-          </div>
+    <div className="bg-verde-agua p-4">
+      <h1 className="text-2xl font-bold text-white">Checkout</h1>
+      {orderId ? (
+        <div className="mt-4">
+          <h2 className="text-xl font-semibold text-white">¡Gracias por tu compra!</h2>
+          <p className="text-lg text-white">Tu número de orden es: {orderId}</p>
         </div>
-
-        <div className="field">
-          <label className="label">Teléfono</label>
-          <div className="control">
-            <input
-              className="input"
-              type="tel"
-              placeholder="999"
-              value={phone}
-              onChange={({ target }) => setPhone(target.value)}
-              required
-            />
-          </div>
+      ) : (
+        <div className="mt-4">
+          {outOfStockItems.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold text-amarillo">Los siguientes productos están agotados:</h2>
+              <ul className="text-verde-agua">
+                {outOfStockItems.map((item) => (
+                  <li key={item.id}>{item.title}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <CheckoutForm onConfirm={createOrder} />
         </div>
-
-        <div className="field">
-          <label className="label">Email</label>
-          <div className="control">
-            <input
-              className="input"
-              type="email"
-              placeholder="example@example.com"
-              value={email}
-              onChange={({ target }) => setEmail(target.value)}
-              required
-            />
-          </div>
-        </div>
-
-        <div className="field">
-          <label className="label">Confirmar Email</label>
-          <div className="control">
-            <input
-              className="input"
-              type="email"
-              placeholder="example@example.com"
-              value={email2}
-              onChange={({ target }) => setEmail2(target.value)}
-              required
-            />
-          </div>
-        </div>
-
-        <button className="button is-info">Crear Orden</button>
-      </form>
+      )}
     </div>
   );
 };
 
-export default CheckOut;
+export default Checkout;

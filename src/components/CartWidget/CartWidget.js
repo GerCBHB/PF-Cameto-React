@@ -1,20 +1,20 @@
-import cart from "./assets/cart.svg";
-import { NavLink } from "react-router-dom";
-
-import { useContext } from "react";
+import React, { useContext } from "react";
 import CartContext from "../../Context/CartContext";
+import cart from "./assets/cart.svg";
+import { Link } from "react-router-dom";
 
-function CartWidget() {
-  const { cantItems } = useContext(CartContext);
+const CartWidget = () => {
+    const { totalQuantity } = useContext(CartContext);
 
-  return (
-    <NavLink to={`/cart`}>
-      <div className="columns">
-        <img src={cart} alt="cart-widget" className="image is-32x32" />
-        <span className="tag is-info is-medium">{cantItems}</span>
-      </div>
-    </NavLink>
-  );
-}
+    return (
+        <Link to='/cart'>
+            <img
+                src={cart}
+                alt='cart-widget'
+                className={`h-10 w-10 ${totalQuantity > 0 ? 'text-verde-agua' : 'text-gray-400'}`}
+            />
+        </Link>
+    );
+};
 
 export default CartWidget;

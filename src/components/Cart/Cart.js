@@ -1,50 +1,52 @@
 import { useContext } from "react";
 import CartContext from "../../Context/CartContext";
-import { NavLink } from "react-router-dom";
+import CartItem from '../CartItem/CartItem';
+import { Link } from "react-router-dom";
 
-export const Cart = () => {
-  const { cartList, cantItems, totalPrice, deleteItem, removeList } = useContext(CartContext);
+const Cart = () => {
+    const { cart, clearCart, totalQuantity, total } = useContext(CartContext);
 
-  if (cantItems == 0) {
+    if (totalQuantity === 0) {
+        return (
+            <div className="text-center p-4">
+                <h1 className="text-2xl font-semibold text-verde-agua">Upss, no hay artículos en el Carrito</h1>
+                <Link to='/' className="text-verde-agua underline hover:text-verde-agua-dark mt-2 inline-block">
+                    Volver a la tienda
+                </Link>
+            </div>
+        );
+    }
+
     return (
-      <div className="container">
-        <h1 className="title">Carrito vacío</h1>
-        <NavLink to={"/"}>
-          <button>Ir al catálogo</button>
-        </NavLink>
-      </div>
+        <div className="p-4">
+            {cart.map(item => (
+                <CartItem
+                    key={item.id}
+                    item={item}
+                    imagen={item.imagen}
+                    quantity={item.quantity}
+                    precio={item.precio}
+                    removeItem={clearCart}
+                    categoria={item.categoria}
+                />
+            ))}
+            <h3 className="text-xl font-semibold text-verde-agua mt-4">Total: ${!isNaN(total) ? total : 0}</h3>
+            <div className="mt-4">
+                <button
+                    onClick={() => clearCart()}
+                    className="bg-verde-agua text-white px-4 py-2 rounded-lg mr-2"
+                >
+                    Vaciar Carrito
+                </button>
+                <Link to='/' className="text-verde-agua underline hover:text-verde-agua-dark">
+                    Seguir comprando
+                </Link>
+                <Link to='/checkout' className="ml-4 bg-verde-agua text-white px-4 py-2 rounded-lg">
+                    Finalizar compra
+                </Link>
+            </div>
+        </div>
     );
-  }
+}
 
-  return (
-    <div className="container">
-      <h1 className="title">Tu compra</h1>
-      {cartList.map((item) => (
-        <div className="box" key={item.id}>
-          <div className="columns">
-            <div className="column is-2">
-              <img src={item.image} alt={item.title} className="image is-64x64" />
-            </div>
-            <div className="column">{item.title}</div>
-            <div className="column">Precio ${item.price}</div>
-            <div className="column">Cantidad: {item.quantity}</div>
-            <div className="column is-1">
-              <button onClick={() => deleteItem(item.id)}>Eliminar</button>
-            </div>
-          </div>
-        </div>
-      ))}
-      <div className="columns is-mobile">
-        <div className="column is-4 is-offset-8">
-          <div className="box" style={{ display: "flex", justifyContent: "space-between" }}>
-            Total: ${totalPrice}{" "}
-            <NavLink to={"/checkout"}>
-              <button>Finalizar compra</button>
-            </NavLink>
-          </div>
-          <button onClick={removeList}>Vaciar carrito</button>
-        </div>
-      </div>
-    </div>
-  );
-};
+export default Cart;
