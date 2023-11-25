@@ -1,35 +1,41 @@
-import { useState, useEffect } from "react"
-// import { getProductById } from "../../asyncMock"
-import ItemDetail from "../ItemDetail/ItemDetail"
-import { useParams } from "react-router-dom"
+import { useState, useEffect } from "react";
+import ItemDetail from "../ItemDetail/ItemDetail";
+import { useParams } from "react-router-dom";
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from "../../config/firebase";
 
-import { getDoc, doc } from "firebase/firestore"
-import { db } from "../../config/firebase"
-
-const ItemDetailContainer = () => {
-    const [product, setProduct] = useState(null)
-    const [loading, setLoading] = useState(true)
-
-    const { itemId } = useParams()
-
+function ItemDetailContainer () {
+    const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const { itemId } = useParams();
+    
     useEffect(() => {
-        setLoading(true)
+        const docRef = doc(db, 'Comidas', itemId);
 
-        const docRef = doc(db, "products", itemId)
-
+        setLoading(true); 
         getDoc(docRef)
-        .then(response => {
-            const data = response.data()
-            const productAdapted = { id: response.id, ...data }
-            setProduct(productAdapted)
-        })
-        .catch(error => {
-            console.log(error)
-        })
-        .finally(( => {
-            setLoading(false)
-        })
-    }, [itemId])
-}    
+            .then(response => {
+                const data = response.data();
+                const productAdapted = { id: response.id, ...data };
+                setProduct(productAdapted);
+            })
+            .catch(error => {
+                console.log(error);
+            })
+            .finally(() => {
+                setLoading(false); 
+            });
+    }, [itemId]);
 
-export default ItemDetailContainer
+    return (
+        <div className="p-4">
+          {loading ? (
+            <p className="text-verde-agua text-lg">Cargando...</p>
+          ) : (
+            <ItemDetail {...product} />
+          )}
+        </div>
+      );
+    };
+    
+    export default ItemDetailContainer;

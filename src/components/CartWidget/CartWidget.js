@@ -2,7 +2,7 @@ import cart from "./assets/cart.svg";
 import { NavLink } from "react-router-dom";
 
 import { useContext } from "react";
-import { CartContext } from "../CartContext/CartContext";
+import CartContext from "../../Context/CartContext";
 
 function CartWidget() {
   const { cantItems } = useContext(CartContext);

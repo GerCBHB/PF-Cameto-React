@@ -1,42 +1,42 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-// import { getProducts, getProductsByCategory } from "../../asyncMock";
-import ItemList from "../ItemList/ItemList";
 import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "../../config/firebase";
+import ItemList from "../ItemList/ItemList";
+import { useParams } from "react-router-dom";
 
-function ItemListContainer({ greeting }) {
-    const [products, setProducts] = useState([])
-    const [loading, setLoading] = useState(true)
-  
-    const { categoryId } = useParams()
-  
-    useEffect(() => {
-        setLoading(true)
+const ItemListContainer = ({ greeting }) => {
+  const [products, setProducts] = useState([]);
+  const { categoriaId } = useParams();
 
-        const collectionRef = categoryId
-            ? query(collection(db, "products"), where("category", "==", categoryId))
-            : collection(db, "items");
-        getDocs(collectionRef)
-            .then((response) => {
-            const productsAdapted = response.docs.map((doc) => {
-            const data = doc.data();
-            return { id: doc.id, ...data };
-          });
-          setProducts(productsAdapted);
+  useEffect(() => {
+    if (db) {
+      const collectionRef = collection(db, "Comidas");
+      const q = categoriaId
+        ? query(collectionRef, where("categoria", "==", categoriaId))
+        : collectionRef;
+      getDocs(q)
+        .then((response) => {
+          const docsFromFirebase = response.docs;
+          setProducts(
+            docsFromFirebase?.map((doc) => {
+              return { ...doc.data(), id: doc.id };
+            })
+          );
         })
-        .catch((error) => {
-          console.log(error);
+        .catch((e) => {
+          console.error("Error fetching data: ", e);
         });
-    }, [categoryId]);
-  
-    return (
-      <div className="container">
-        <h1 className="title">{greeting}</h1>
+    }
+  }, [categoriaId]);
+
+  return (
+    <div className="bg-green-100 text-green-900 py-6 px-4">
+      <h1 className="text-2xl font-semibold mb-4">{greeting}</h1>
+      <section>
         <ItemList products={products} />
-      </div>
-    );
-  }
-  
-  export default ItemListContainer;
-  
+      </section>
+    </div>
+  );
+};
+
+export default ItemListContainer;
