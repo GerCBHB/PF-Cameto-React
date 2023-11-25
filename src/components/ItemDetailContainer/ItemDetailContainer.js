@@ -4,38 +4,40 @@ import { useParams } from "react-router-dom";
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from "../../config/firebase";
 
-function ItemDetailContainer () {
-    const [product, setProduct] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const { itemId } = useParams();
-    
-    useEffect(() => {
-        const docRef = doc(db, 'Comidas', itemId);
+const ItemDetailContainer = () => {
+ const [product, setProduct] = useState(null);
+ const [loading, setLoading] = useState(true);
 
-        setLoading(true); 
-        getDoc(docRef)
-            .then(response => {
-                const data = response.data();
-                const productAdapted = { id: response.id, ...data };
-                setProduct(productAdapted);
-            })
-            .catch(error => {
-                console.log(error);
-            })
-            .finally(() => {
-                setLoading(false); 
-            });
-    }, [itemId]);
+ const { itemId } = useParams();
 
-    return (
-        <div className="p-4">
-          {loading ? (
-            <p className="text-verde-agua text-lg">Cargando...</p>
-          ) : (
-            <ItemDetail {...product} />
-          )}
-        </div>
-      );
-    };
-    
-    export default ItemDetailContainer;
+ useEffect(() => {
+    setLoading(true);
+
+    const docRef = doc(db, "products", itemId);
+
+    getDoc(docRef)
+      .then(response => {
+        const data = response.data();
+        const productAdapted = { id: response.id, ...data };
+        setProduct(productAdapted);
+      })
+      .catch(error => {
+        console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+ }, [itemId]);
+
+ if (loading) {
+    return <div>Loading...</div>;
+ }
+
+ if (!product) {
+    return <div>Product not found</div>;
+ }
+
+ return <ItemDetail product={product} />;
+};
+
+export default ItemDetailContainer;
