@@ -1,8 +1,7 @@
+import React from "react";
 import { NavLink, Link } from "react-router-dom";
-
-import logo from "../NavBar/assets/papeleria-logo.jpeg"
-
 import CartWidget from "../CartWidget/CartWidget";
+import logo from "../NavBar/assets/papeleria-logo.jpeg"
 
 function NavBar() {
   return (
